@@ -1,8 +1,8 @@
 // Supabase Configuration
 // Replace with your own Supabase project URL and anon key
 // Get these from https://supabase.com/dashboard/project/YOUR_PROJECT/settings/api
-export const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-export const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';
+export const SUPABASE_URL = 'https://ekejudestlnnluizbpky.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZWp1ZGVzdGxubmx1aXpicGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwODA5NzksImV4cCI6MjA5MzY1Njk3OX0.R5IZMKt2-4S3piGh4aBqYqyYc6W_tqFVjcqzrOIkMqs';
 
 // App Configuration
 export const APP_NAME = 'MotoRoute';
