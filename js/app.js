@@ -36,7 +36,6 @@ let authReady = false;
 async function boot() {
   applyStoredTheme();
 
-  // Show loading progress
   const fill = document.getElementById('loading-fill');
   let progress = 0;
   const progInterval = setInterval(() => {
@@ -44,13 +43,23 @@ async function boot() {
     if (fill) fill.style.width = progress + '%';
   }, 150);
 
-  await initAuth();
+  // Timeout guard: never stay on loading screen longer than 7s
+  try {
+    await Promise.race([
+      initAuth(),
+      new Promise(resolve => setTimeout(resolve, 7000))
+    ]);
+  } catch {}
 
   clearInterval(progInterval);
   if (fill) fill.style.width = '100%';
 
   setTimeout(() => {
-    document.getElementById('loading-screen')?.classList.add('fade-out');
+    const ls = document.getElementById('loading-screen');
+    if (ls) {
+      ls.classList.add('fade-out');
+      setTimeout(() => { ls.style.display = 'none'; }, 600);
+    }
     authReady = true;
     handleAuthState(getUser(), getProfile());
   }, 400);

@@ -19,21 +19,25 @@ export async function initAuth() {
   if (!supabase) return;
 
   supabase.onAuthStateChange(async (event, session) => {
-    if (session?.user) {
-      currentUser = session.user;
-      currentProfile = await fetchProfile(session.user.id);
-    } else {
-      currentUser = null;
-      currentProfile = null;
-    }
+    try {
+      if (session?.user) {
+        currentUser = session.user;
+        currentProfile = await fetchProfile(session.user.id).catch(() => null);
+      } else {
+        currentUser = null;
+        currentProfile = null;
+      }
+    } catch {}
     notify(currentUser, currentProfile);
   });
 
-  const { data: { session } } = await supabase.getSession();
-  if (session?.user) {
-    currentUser = session.user;
-    currentProfile = await fetchProfile(session.user.id);
-  }
+  try {
+    const { data: { session } } = await supabase.getSession();
+    if (session?.user) {
+      currentUser = session.user;
+      currentProfile = await fetchProfile(session.user.id).catch(() => null);
+    }
+  } catch {}
   notify(currentUser, currentProfile);
 }
 
