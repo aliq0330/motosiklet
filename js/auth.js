@@ -47,7 +47,22 @@ async function fetchProfile(userId) {
     .select('*')
     .eq('id', userId)
     .single();
-  return data;
+  if (data) return data;
+
+  // Profile doesn't exist yet — create one automatically
+  const supabaseAuth = db.auth();
+  if (!supabaseAuth) return null;
+  const { data: { user } } = await supabaseAuth.getUser().catch(() => ({ data: { user: null } }));
+  if (!user || user.id !== userId) return null;
+
+  const base = user.email?.split('@')[0] || 'kullanici';
+  const username = base.replace(/[^a-z0-9_]/gi, '_') + '_' + userId.slice(0, 4);
+  const { data: created } = await db.from('profiles')
+    .insert({ id: userId, username, full_name: user.user_metadata?.full_name || base })
+    .select()
+    .single()
+    .catch(() => ({ data: null }));
+  return created;
 }
 
 export async function signUp(email, password, username, fullName) {

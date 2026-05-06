@@ -15,7 +15,7 @@ export async function renderProfile({ params = {} } = {}) {
   try {
     let profile;
     if (!params.id || params.id === me?.id) {
-      profile = myProfile;
+      profile = myProfile || (me?.id ? await getProfile(me.id).catch(() => null) : null);
     } else {
       profile = await getProfile(params.id).catch(() => null);
       if (!profile) profile = await getProfileByUsername(params.id).catch(() => null);

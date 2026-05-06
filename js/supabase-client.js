@@ -16,6 +16,14 @@ export function getSupabase() {
       },
       realtime: {
         params: { eventsPerSecond: 10 }
+      },
+      global: {
+        fetch: (url, options = {}) => {
+          const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), 12000);
+          return fetch(url, { ...options, signal: controller.signal })
+            .finally(() => clearTimeout(id));
+        }
       }
     });
   }
