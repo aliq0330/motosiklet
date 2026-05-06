@@ -1,4 +1,4 @@
-const CACHE_NAME = 'motoroute-v1';
+const CACHE_NAME = 'motoroute-v3';
 const STATIC_ASSETS = [
   '/motosiklet/',
   '/motosiklet/index.html',
@@ -53,6 +53,22 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return;
 
+  // Network-first for JS/CSS/HTML: always get fresh code
+  const isAppFile = /\.(js|css|html)$/.test(url.pathname) || url.pathname.endsWith('/');
+  if (isAppFile) {
+    e.respondWith(
+      fetch(e.request).then((resp) => {
+        if (resp && resp.status === 200 && resp.type === 'basic') {
+          const clone = resp.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));
+        }
+        return resp;
+      }).catch(() => caches.match(e.request).then(c => c || caches.match('/motosiklet/index.html')))
+    );
+    return;
+  }
+
+  // Cache-first for other static assets (fonts, images, etc.)
   e.respondWith(
     caches.match(e.request).then((cached) => {
       if (cached) return cached;
@@ -63,9 +79,7 @@ self.addEventListener('fetch', (e) => {
         }
         return resp;
       }).catch(() => {
-        if (e.request.mode === 'navigate') {
-          return caches.match('/motosiklet/index.html');
-        }
+        if (e.request.mode === 'navigate') return caches.match('/motosiklet/index.html');
       });
     })
   );

@@ -32,7 +32,8 @@ export async function initAuth() {
   });
 
   try {
-    const { data: { session } } = await supabase.getSession();
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000));
+    const { data: { session } } = await Promise.race([supabase.getSession(), timeout]);
     if (session?.user) {
       currentUser = session.user;
       currentProfile = await fetchProfile(session.user.id).catch(() => null);
