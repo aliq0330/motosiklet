@@ -68,9 +68,10 @@ function matchRoute(path) {
 async function handleRoute() {
   const path = getHashPath();
   const queryParams = getHashParams();
+  const fullRoute = path + (window.location.hash.split('?')[1] || '');
 
-  if (currentRoute === path + window.location.hash.split('?')[1]) return;
-  currentRoute = path;
+  if (currentRoute === fullRoute) return;
+  currentRoute = fullRoute;
 
   const matched = matchRoute(path);
   if (matched) {

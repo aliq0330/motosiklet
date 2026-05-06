@@ -117,18 +117,45 @@ export async function renderDashboard() {
 }
 
 async function loadDashboardData(user) {
+  const errHtml = (icon, msg) => `<div class="empty-state sm"><i class="fas fa-${icon}"></i><p>${msg}</p></div>`;
+
   const [popularResult, upcomingResult] = await Promise.all([
-    getRoutes({ limit: 6 }).catch(() => ({ data: [] })),
-    getEvents({ limit: 4, upcoming: true }).catch(() => ({ data: [] }))
+    getRoutes({ limit: 6 }).catch(e => {
+      console.error('Routes fetch error:', e);
+      return { data: [], _error: true };
+    }),
+    getEvents({ limit: 4, upcoming: true }).catch(e => {
+      console.error('Events fetch error:', e);
+      return { data: [], _error: true };
+    })
   ]);
 
-  renderUpcomingEvents(upcomingResult.data);
-  renderPopularRoutes(popularResult.data);
+  const evEl = document.getElementById('upcoming-events');
+  const rtEl = document.getElementById('popular-routes');
+  if (upcomingResult._error && evEl) {
+    evEl.innerHTML = errHtml('exclamation-circle', 'Etkinlikler yüklenemedi');
+  } else {
+    renderUpcomingEvents(upcomingResult.data);
+  }
+  if (popularResult._error && rtEl) {
+    rtEl.innerHTML = errHtml('exclamation-circle', 'Rotalar yüklenemedi');
+  } else {
+    renderPopularRoutes(popularResult.data);
+  }
 
   if (user) {
-    const { routes: feedRoutes } = await getDashboardFeed(user.id).catch(() => ({ routes: [] }));
-    renderFeed(feedRoutes);
-    document.getElementById('ws-routes').textContent = feedRoutes.filter(r => r.user_id === user.id).length;
+    const feedResult = await getDashboardFeed(user.id).catch(e => {
+      console.error('Feed fetch error:', e);
+      return { routes: [], _error: true };
+    });
+    const feedEl = document.getElementById('activity-feed');
+    if (feedResult._error && feedEl) {
+      feedEl.innerHTML = errHtml('exclamation-circle', 'Akış yüklenemedi');
+    } else {
+      renderFeed(feedResult.routes || []);
+    }
+    const ws = document.getElementById('ws-routes');
+    if (ws) ws.textContent = (feedResult.routes || []).filter(r => r.user_id === user.id).length;
   }
 }
 

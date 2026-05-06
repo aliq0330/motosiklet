@@ -156,6 +156,10 @@ async function loadRoutes(reset = false) {
   } catch (err) {
     loading?.classList.add('hidden');
     console.error('Routes load error:', err);
+    if (empty) {
+      empty.innerHTML = `<i class="fas fa-exclamation-circle"></i><p>Rotalar yüklenemedi</p><span>${err?.message || 'Bağlantı hatası'}</span>`;
+      empty.classList.remove('hidden');
+    }
   }
 
   isLoading = false;

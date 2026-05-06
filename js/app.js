@@ -87,7 +87,7 @@ function handleAuthState(user, profile) {
     setupNotificationPanel();
     setupLogout();
 
-    if (path === '/login' || path === '/signup' || path === '/') {
+    if (path === '/login' || path === '/signup' || path === '/forgot') {
       navigate('/', true);
     }
   } else {
