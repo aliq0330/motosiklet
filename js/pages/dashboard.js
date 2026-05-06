@@ -113,7 +113,16 @@ export async function renderDashboard() {
     document.getElementById('ws-rides').textContent = profile.total_rides || 0;
   }
 
-  loadDashboardData(user);
+  // Fallback: replace any remaining spinners after 11s no matter what
+  const spinnerKiller = setTimeout(() => {
+    const fallback = `<div class="empty-state sm"><i class="fas fa-wifi" style="color:var(--warning)"></i><p>Bağlantı yavaş veya veri yok</p><span>Supabase SQL Editor'da <b>supabase-setup.sql</b> ve <b>seed-data.sql</b> çalıştırıldı mı?</span></div>`;
+    ['upcoming-events','popular-routes','activity-feed'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el?.querySelector('.spinner, .page-loading')) el.innerHTML = fallback;
+    });
+  }, 11000);
+
+  loadDashboardData(user).finally(() => clearTimeout(spinnerKiller));
 }
 
 async function loadDashboardData(user) {

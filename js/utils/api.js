@@ -1,6 +1,14 @@
 import { db } from '../supabase-client.js';
 import { getUser } from '../auth.js';
 
+// 10 second timeout on every query — prevents infinite spinners
+const Q_TIMEOUT = 10000;
+function run(q) {
+  return Promise.race([
+    q,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('Supabase bağlantısı zaman aşımına uğradı')), Q_TIMEOUT))
+  ]);
+}
 // ===== ROUTES =====
 export async function getRoutes({ page = 0, limit = 12, difficulty, roadType, vehicleType, search, minDist, maxDist, userId } = {}) {
   let q = db.from('routes')
@@ -15,7 +23,7 @@ export async function getRoutes({ page = 0, limit = 12, difficulty, roadType, ve
   if (minDist) q = q.gte('distance', minDist);
   if (maxDist) q = q.lte('distance', maxDist);
   if (userId) q = q.eq('user_id', userId);
-  const { data, error, count } = await q;
+  const { data, error, count } = await run(q);
   if (error) throw error;
   return { data: data || [], count: count || 0 };
 }
@@ -117,7 +125,7 @@ export async function getEvents({ page = 0, limit = 12, upcoming = false, userId
   if (upcoming) q = q.gte('date', new Date().toISOString());
   if (userId) q = q.eq('created_by', userId);
   if (clubId) q = q.eq('club_id', clubId);
-  const { data, error, count } = await q;
+  const { data, error, count } = await run(q);
   if (error) throw error;
   return { data: data || [], count: count || 0 };
 }
@@ -180,7 +188,7 @@ export async function getClubs({ page = 0, limit = 12, search } = {}) {
     .order('member_count', { ascending: false })
     .range(page * limit, page * limit + limit - 1);
   if (search) q = q.ilike('name', `%${search}%`);
-  const { data, error, count } = await q;
+  const { data, error, count } = await run(q);
   if (error) throw error;
   return { data: data || [], count: count || 0 };
 }
